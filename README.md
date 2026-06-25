@@ -72,5 +72,5 @@ Ancestor– A name of permanence for the rare thirteenth moon.
 
 I hope this calendar supports your health, growth, and brings you joy for many moons.
 
-
+ - Paul Berick
 
