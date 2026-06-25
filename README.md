@@ -66,7 +66,7 @@ Bone – Honoring death’s stark beauty.
 
 Crow – For the playful, wild reminders of mortality.
 
-Ancestor– A name of permanence for the rare thirteenth moon.
+Ancestor – A name of permanence for the rare thirteenth moon.
 
 
 
