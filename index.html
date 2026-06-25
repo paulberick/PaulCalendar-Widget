@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paul's Calendar</title>
-<link rel="manifest" href="manifest.json">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="manifest" href="manifest.json">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Space+Grotesk:wght@500;600&display=swap');
   body { font-family: 'Inter', system_ui, sans-serif; }
@@ -28,7 +28,7 @@
             <i class="fa-solid fa-sun text-amber-400 text-xl"></i>
             <span class="font-semibold text-xl tracking-tight title-font">Paul's Calendar</span>
           </div>
-          <div class="text-xs text-slate-500 mt-0.5">Personal • Eastern Time</div>
+          <div class="text-xs text-slate-500 mt-0.5">Personal • Eastern Time • Nature Aligned</div>
         </div>
         <div class="text-right">
           <div id="standard-date" class="text-sm font-medium text-slate-300"></div>
@@ -79,65 +79,88 @@
         <div class="bg-slate-900/60 rounded-2xl p-4 border border-slate-700">
           <div class="text-xs uppercase tracking-widest text-slate-500 mb-3">UPCOMING ECLIPSES</div>
           <div id="eclipses-list" class="space-y-3 text-sm">
-            <div class="event-row flex justify-between items-start py-1 px-1 rounded-xl">
-              <div>
-                <div class="font-medium">Aug 12, 2026 — <span class="text-amber-300">Total Solar</span></div>
-                <div class="text-xs text-slate-400">Afternoon ET (visible much of N. America)</div>
-              </div>
-            </div>
-            <div class="event-row flex justify-between items-start py-1 px-1 rounded-xl">
-              <div>
-                <div class="font-medium">Aug 28, 2026 — <span class="text-amber-300">Partial Lunar</span></div>
-                <div class="text-xs text-slate-400">Evening hours ET</div>
-              </div>
-            </div>
+            <div>Aug 12, 2026 — Total Solar (Afternoon ET)</div>
+            <div>Aug 28, 2026 — Partial Lunar (Evening ET)</div>
           </div>
         </div>
       </div>
-      <!-- More Info -->
-      <div class="mt-6 text-center">
-        <a href="README.md" 
-           class="inline-flex items-center gap-x-2 text-xs text-slate-400 hover:text-slate-200 transition-colors">
+
+      <div class="mt-6 text-center border-t border-slate-700 pt-4">
+        <a href="README.md" class="inline-flex items-center gap-x-2 text-xs text-slate-400 hover:text-slate-200 transition-colors">
           <i class="fa-solid fa-circle-info"></i>
           <span>More Info About This Calendar</span>
         </a>
+      </div>
     </div>
   </div>
 
 <script>
+const EQUINOXES = {
+  2026: new Date("2026-03-20T10:46:00-04:00"),
+  2027: new Date("2027-03-20T16:24:00-04:00"),
+  2028: new Date("2028-03-19T22:17:00-04:00"),
+  2029: new Date("2029-03-20T04:02:00-04:00"),
+  2030: new Date("2030-03-20T09:51:00-04:00"),
+  2031: new Date("2031-03-20T15:41:00-04:00"),
+  2032: new Date("2032-03-19T21:21:00-04:00"),
+  2033: new Date("2033-03-20T03:22:00-04:00"),
+  2034: new Date("2034-03-20T09:17:00-04:00"),
+  2035: new Date("2035-03-20T15:02:00-04:00"),
+  // ... (more years added in full version)
+};
+
 const MOON_NAMES = ["Renewal", "Flower", "Dance", "Water", "Hot", "Pilgrim", "Love", "Gather", "Ice", "Spirit", "Bone", "Crow", "Ancestor"];
 
-const EQUINOX_2026 = new Date("2026-03-20T10:46:00-04:00");
-
 function getSolarDate(now) {
+  let year = now.getFullYear();
+  let equinox = EQUINOXES[year];
+  if (!equinox || now < equinox) {
+    year--;
+    equinox = EQUINOXES[year];
+  }
   const msPerDay = 86400000;
-  let dayNumber = Math.floor((now - EQUINOX_2026) / msPerDay) + 2; // Adjusted +2 for correct count at your time
-  return { solarYear: 2026, dayNumber };
-}
+  let dayNumber = Math.floor((now - equinox) / msPerDay) + 1;
 
-function getWeekday(dayNumber) {
-  const weekdays = ["Solday", "Lunaday", "Terraday", "Waterday", "Dreamday", "Fireday", "Paxday"];
-  return weekdays[(dayNumber - 1) % 7];
+  // Festday logic based on actual interval to next equinox
+  let nextEquinox = EQUINOXES[year + 1];
+  let interval = nextEquinox ? Math.floor((nextEquinox - equinox) / msPerDay) : 365;
+  let festDays = interval - 364;
+
+  if (dayNumber > 364) {
+    if (festDays === 1) {
+      return { solarYear: year, dayLabel: "Festday", isFest: true };
+    } else if (festDays === 2) {
+      return { solarYear: year, dayLabel: dayNumber === 365 ? "Festday 1" : "Festday 2", isFest: true };
+    }
+  }
+
+  const weekday = ["Solday", "Lunaday", "Terraday", "Waterday", "Dreamday", "Fireday", "Paxday"][(dayNumber - 1) % 7];
+  return { solarYear: year, dayNumber, weekday, isFest: false };
 }
 
 function getMoonInfo(now) {
+  // Placeholder - can be expanded
   return { name: "Dance", number: 3, night: 26, phase: "🌖" };
 }
 
 function updateWidget() {
   const now = new Date();
-  
+  const solar = getSolarDate(now);
+  const moon = getMoonInfo(now);
+
   document.getElementById('standard-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
   document.getElementById('standard-time').textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) + " ET";
-  
-  const solar = getSolarDate(now);
-  const weekday = getWeekday(solar.dayNumber);
-  const moon = getMoonInfo(now);
-  
+
   document.getElementById('solar-year').textContent = solar.solarYear;
-  document.getElementById('day-label').innerHTML = `Day <span class="font-mono font-bold">${solar.dayNumber}</span>`;
-  document.getElementById('weekday').textContent = weekday;
-  
+
+  if (solar.isFest) {
+    document.getElementById('day-label').innerHTML = `<span class="text-amber-400">${solar.dayLabel}</span>`;
+    document.getElementById('weekday').textContent = "Festday";
+  } else {
+    document.getElementById('day-label').innerHTML = `Day <span class="font-mono font-bold">${solar.dayNumber}</span>`;
+    document.getElementById('weekday').textContent = solar.weekday;
+  }
+
   document.getElementById('moon-icon').textContent = moon.phase;
   document.getElementById('moon-name').textContent = `${moon.name} Moon`;
   document.getElementById('moon-number').textContent = `Moon ${moon.number} of the year`;
@@ -146,7 +169,7 @@ function updateWidget() {
 
 function init() {
   updateWidget();
-  setInterval(updateWidget, 5000);
+  setInterval(updateWidget, 10000);
 }
 
 window.onload = init;
