@@ -29,7 +29,7 @@
             <i class="fa-solid fa-sun text-amber-400 text-xl"></i>
             <span class="font-semibold text-xl tracking-tight title-font">Paul's Calendar</span>
           </div>
-          <div class="text-xs text-slate-500 mt-0.5">Personal • Eastern Time • Nature Aligned</div>
+          <div class="text-xs text-slate-500 mt-0.5">Eastern Time • Nature Aligned</div>
         </div>
         <div class="text-right">
           <div id="standard-date" class="text-sm font-medium text-slate-300"></div>
@@ -188,8 +188,35 @@ function getSolarDate(now) {
 }
 
 function getMoonInfo(now) {
-  return { name: "Dance", number: 3, night: 26, phase: "🌖" };
+  const solar = getSolarDate(now); // Reuse solar year
+  const year = solar.solarYear;
+  
+  // Approximate first full moon after equinox (can be refined with exact list)
+  const equinox = EQUINOXES[year];
+  const daysSinceEquinox = (now - equinox) / 86400000;
+  
+  // First full moon after equinox is roughly 14 days later (average)
+  const firstFullMoonDays = 14; 
+  const daysSinceFirstFullMoon = daysSinceEquinox - firstFullMoonDays;
+  
+  const LUNAR_CYCLE = 29.53059;
+  let cyclePosition = daysSinceFirstFullMoon % LUNAR_CYCLE;
+  if (cyclePosition < 0) cyclePosition += LUNAR_CYCLE;
+
+  const night = Math.floor(cyclePosition) + 1;
+
+  const MOON_NAMES = ["Renewal", "Flower", "Dance", "Water", "Hot", "Pilgrim", "Love", "Gather", "Ice", "Spirit", "Bone", "Crow", "Ancestor"];
+  let moonIndex = Math.floor(daysSinceFirstFullMoon / LUNAR_CYCLE);
+  moonIndex = Math.max(0, moonIndex % MOON_NAMES.length);
+
+  return {
+    name: MOON_NAMES[moonIndex],
+    number: moonIndex + 1,
+    night: night,
+    phase: cyclePosition < 1 ? "🌕" : cyclePosition < 7 ? "🌖" : cyclePosition < 8 ? "🌗" : cyclePosition < 15 ? "🌘" : cyclePosition < 16 ? "🌑" : cyclePosition < 22 ? "🌒" : cyclePosition < 23 ? "🌓" : "🌔"
+  };
 }
+
 
 function updateWidget() {
   const now = new Date();
