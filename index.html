@@ -188,32 +188,43 @@ function getSolarDate(now) {
 }
 
 function getMoonInfo(now) {
-  const solar = getSolarDate(now); // Reuse solar year
-  const year = solar.solarYear;
-  
-  // Approximate first full moon after equinox (can be refined with exact list)
-  const equinox = EQUINOXES[year];
-  const daysSinceEquinox = (now - equinox) / 86400000;
-  
-  // First full moon after equinox is roughly 14 days later (average)
-  const firstFullMoonDays = 14; 
-  const daysSinceFirstFullMoon = daysSinceEquinox - firstFullMoonDays;
-  
-  const LUNAR_CYCLE = 29.53059;
-  let cyclePosition = daysSinceFirstFullMoon % LUNAR_CYCLE;
-  if (cyclePosition < 0) cyclePosition += LUNAR_CYCLE;
-
-  const night = Math.floor(cyclePosition) + 1;
+  const FULL_MOONS = [
+    new Date("2026-01-03T05:03:00-05:00"),
+    new Date("2026-02-01T17:09:00-05:00"),
+    new Date("2026-03-03T06:38:00-05:00"),
+    new Date("2026-04-01T22:11:00-04:00"),
+    new Date("2026-05-01T13:23:00-04:00"),
+    new Date("2026-05-31T04:45:00-04:00"),
+    new Date("2026-06-29T19:56:00-04:00"),
+    new Date("2026-07-29T10:35:00-04:00"),
+    new Date("2026-08-28T00:18:00-04:00"),
+    new Date("2026-09-26T12:49:00-04:00"),
+    new Date("2026-10-26T00:11:00-04:00"),
+    new Date("2026-11-24T09:53:00-05:00"),
+    new Date("2026-12-23T20:28:00-05:00"),
+  ];
 
   const MOON_NAMES = ["Renewal", "Flower", "Dance", "Water", "Hot", "Pilgrim", "Love", "Gather", "Ice", "Spirit", "Bone", "Crow", "Ancestor"];
-  let moonIndex = Math.floor(daysSinceFirstFullMoon / LUNAR_CYCLE);
-  moonIndex = Math.max(0, moonIndex % MOON_NAMES.length);
+
+  // Find the most recent full moon
+  let lastFullMoon = FULL_MOONS[0];
+  let moonIndex = 0;
+  for (let i = 0; i < FULL_MOONS.length; i++) {
+    if (FULL_MOONS[i] > now) break;
+    lastFullMoon = FULL_MOONS[i];
+    moonIndex = i;
+  }
+
+  const msPerDay = 86400000;
+  const daysSinceFullMoon = Math.floor((now - lastFullMoon) / msPerDay);
+
+  const night = daysSinceFullMoon + 1; // +1 so the full moon day is Night 1
 
   return {
-    name: MOON_NAMES[moonIndex],
-    number: moonIndex + 1,
+    name: MOON_NAMES[moonIndex % MOON_NAMES.length],
+    number: (moonIndex % 13) + 1,
     night: night,
-    phase: cyclePosition < 1 ? "🌕" : cyclePosition < 7 ? "🌖" : cyclePosition < 8 ? "🌗" : cyclePosition < 15 ? "🌘" : cyclePosition < 16 ? "🌑" : cyclePosition < 22 ? "🌒" : cyclePosition < 23 ? "🌓" : "🌔"
+    phase: "🌖"
   };
 }
 
